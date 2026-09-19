@@ -8,9 +8,9 @@
     <div class="sm:flex sm:items-center sm:justify-between">
         <div>
             <div class="flex items-center space-x-2.5">
-                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight font-display">Control de Citas Médicas</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight font-display">Dashboard & Control de Citas Médicas</h1>
                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-clinical-50 text-clinical-700 border border-clinical-200">
-                    Panel Clínico
+                    Dashboard Clínico
                 </span>
             </div>
             <p class="text-xs text-slate-500 mt-1">Gestión integral de agendamiento, monitoreo de estados, reprogramaciones y cancelaciones del hospital.</p>

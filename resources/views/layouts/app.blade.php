@@ -168,9 +168,9 @@
                         <a href="{{ route('appointments.index') }}" 
                            class="inline-flex items-center px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 {{ request()->routeIs('appointments.index') ? 'bg-clinical-50 text-clinical-700 shadow-sm border border-clinical-200/60' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70' }}">
                             <svg class="w-4 h-4 mr-1.5 text-slate-400 {{ request()->routeIs('appointments.index') ? 'text-clinical-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
                             </svg>
-                            Listado
+                            Dashboard
                         </a>
 
                         <a href="{{ route('appointments.calendar') }}" 
