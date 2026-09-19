@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Appointments\CancelAppointmentRequest;
+use App\Http\Requests\Appointments\ChangeAppointmentStatusRequest;
 use App\Http\Requests\Appointments\RescheduleAppointmentRequest;
 use App\Http\Requests\Appointments\StoreAppointmentRequest;
+use App\Http\Requests\Appointments\UpdateAppointmentRequest;
 use App\Http\Resources\V1\AppointmentResource;
 use App\Models\Appointment;
 use App\Services\AppointmentService;
@@ -78,8 +80,24 @@ class AppointmentApiController extends Controller
     }
 
     /**
+     * PUT/PATCH /api/v1/appointments/{id}
+     * Actualizar información general de una cita médica
+     */
+    public function update(UpdateAppointmentRequest $request, int $id): JsonResponse
+    {
+        $appointment = Appointment::findOrFail($id);
+        $updated = $this->appointmentService->updateAppointment($appointment, $request->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cita médica actualizada correctamente.',
+            'data'    => new AppointmentResource($updated),
+        ]);
+    }
+
+    /**
      * PUT/PATCH /api/v1/appointments/{id}/reschedule
-     * Reprogramar una cita médica existente
+     * Reprogramar una cita médica existente (con motivo y nueva fecha)
      */
     public function reschedule(RescheduleAppointmentRequest $request, int $id): JsonResponse
     {
@@ -109,6 +127,27 @@ class AppointmentApiController extends Controller
             'success' => true,
             'message' => 'Cita médica cancelada correctamente.',
             'data'    => new AppointmentResource($cancelledAppointment),
+        ]);
+    }
+
+    /**
+     * PATCH /api/v1/appointments/{id}/status
+     * Cambiar de estado una cita médica (confirmed, attended, no_show, cancelled, pending)
+     */
+    public function changeStatus(ChangeAppointmentStatusRequest $request, int $id): JsonResponse
+    {
+        $appointment = Appointment::findOrFail($id);
+        $updated = $this->appointmentService->changeStatus(
+            $appointment,
+            $request->validated('status'),
+            $request->validated('note'),
+            $request->validated('cancellation_reason')
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "Estado de la cita actualizado a '{$updated->status->label()}'.",
+            'data'    => new AppointmentResource($updated),
         ]);
     }
 }
