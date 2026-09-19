@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\AppointmentStatus;
+use App\Exceptions\AppointmentScheduleConflictException;
 use App\Models\Appointment;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -258,11 +259,10 @@ class AppointmentService
             $conflictStart = substr($conflict->start_time, 0, 5);
             $conflictEnd = substr($conflict->end_time, 0, 5);
 
-            throw ValidationException::withMessages([
-                'doctor_id' => [
-                    "Conflicto de doble reserva: El médico ya tiene la cita '{$conflict->appointment_code}' agendada de {$conflictStart} a {$conflictEnd} en esa misma fecha."
-                ],
-            ]);
+            throw new AppointmentScheduleConflictException(
+                "Conflicto de horario: El médico ya tiene la cita '{$conflict->appointment_code}' agendada de {$conflictStart} a {$conflictEnd} en esa misma fecha.",
+                'doctor_id'
+            );
         }
     }
 
@@ -282,11 +282,10 @@ class AppointmentService
             $conflictStart = substr($conflict->start_time, 0, 5);
             $conflictEnd = substr($conflict->end_time, 0, 5);
 
-            throw ValidationException::withMessages([
-                'patient_id' => [
-                    "Conflicto de agenda: El paciente ya tiene otra cita médica ({$conflict->appointment_code}) programada de {$conflictStart} a {$conflictEnd} en esa misma fecha."
-                ],
-            ]);
+            throw new AppointmentScheduleConflictException(
+                "Conflicto de horario: El paciente ya tiene otra cita médica ({$conflict->appointment_code}) programada de {$conflictStart} a {$conflictEnd} en esa misma fecha.",
+                'patient_id'
+            );
         }
     }
 
