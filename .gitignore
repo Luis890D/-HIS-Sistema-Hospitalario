@@ -13,3 +13,15 @@ yarn-error.log
 /.vscode
 .DS_Store
 Thumbs.db
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+!/storage/framework/cache/.gitkeep
+!/storage/framework/sessions/.gitkeep
+!/storage/framework/views/.gitkeep
+!/storage/logs/.gitkeep
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+*.sqlite
+*.sqlite-journal
