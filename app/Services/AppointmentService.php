@@ -96,6 +96,51 @@ class AppointmentService
     }
 
     /**
+     * Actualizar datos generales de una cita médica
+     * Si cambia de fecha u horario, valida que no colisione con otra cita
+     */
+    public function updateAppointment(Appointment $appointment, array $data): Appointment
+    {
+        $doctorId = $data['doctor_id'] ?? $appointment->doctor_id;
+        $date = $data['appointment_date'] ?? $appointment->appointment_date->format('Y-m-d');
+        $startTime = $data['start_time'] ?? $appointment->start_time;
+        $endTime = $data['end_time'] ?? $appointment->end_time;
+
+        if (isset($data['appointment_date']) || isset($data['start_time']) || isset($data['end_time']) || isset($data['doctor_id'])) {
+            $this->ensureDoctorIsAvailable($doctorId, $date, $startTime, $endTime, $appointment->id);
+        }
+
+        $appointment->update($data);
+
+        return $appointment->fresh(['doctor.specialty', 'patient', 'specialty']);
+    }
+
+    /**
+     * Cambiar el estado de una cita médica (confirmed, attended, no_show, cancelled, pending)
+     */
+    public function changeStatus(Appointment $appointment, string $status, ?string $note = null, ?string $cancellationReason = null): Appointment
+    {
+        $newStatus = AppointmentStatus::from($status);
+
+        return DB::transaction(function () use ($appointment, $newStatus, $note, $cancellationReason) {
+            $updateData = ['status' => $newStatus];
+
+            if ($note) {
+                $updateData['clinical_notes'] = ($appointment->clinical_notes ? $appointment->clinical_notes . "\n" : '') . "[Estado a {$newStatus->label()}]: " . $note;
+            }
+
+            if ($newStatus === AppointmentStatus::CANCELLED) {
+                $updateData['cancellation_reason'] = $cancellationReason ?? 'Cancelada mediante cambio de estado API';
+                $updateData['cancelled_at'] = now();
+            }
+
+            $appointment->update($updateData);
+
+            return $appointment->fresh(['doctor.specialty', 'patient', 'specialty']);
+        });
+    }
+
+    /**
      * Comprueba si el médico tiene disponible el intervalo de tiempo especificado
      */
     public function isSlotAvailable(
