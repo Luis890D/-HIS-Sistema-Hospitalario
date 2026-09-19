@@ -21,6 +21,7 @@ Route::prefix('v1')->group(function () {
     Route::match(['put', 'patch'], '/appointments/{id}/reschedule', [AppointmentApiController::class, 'reschedule'])->name('api.v1.appointments.reschedule');
     Route::match(['put', 'patch'], '/appointments/{id}/cancel', [AppointmentApiController::class, 'cancel'])->name('api.v1.appointments.cancel');
     Route::patch('/appointments/{id}/status', [AppointmentApiController::class, 'changeStatus'])->name('api.v1.appointments.status');
+    Route::get('/calendar/events', [AppointmentApiController::class, 'calendarEvents'])->name('api.v1.calendar.events');
 
     // 2. Endpoints de Lectura de Médicos
     Route::get('/doctors', [DoctorApiController::class, 'index'])->name('api.v1.doctors.index');

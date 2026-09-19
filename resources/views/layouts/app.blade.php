@@ -49,7 +49,13 @@
                     </div>
                 </div>
                 <nav class="flex items-center space-x-4">
-                    <a href="{{ route('appointments.index') }}" class="text-sm font-medium text-slate-600 hover:text-clinical-600 transition">Listado de Citas</a>
+                    <a href="{{ route('appointments.index') }}" class="text-sm font-medium {{ request()->routeIs('appointments.index') ? 'text-clinical-600 font-semibold' : 'text-slate-600 hover:text-clinical-600' }} transition">Listado</a>
+                    <a href="{{ route('appointments.calendar') }}" class="text-sm font-medium {{ request()->routeIs('appointments.calendar') ? 'text-clinical-600 font-semibold' : 'text-slate-600 hover:text-clinical-600' }} transition flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Calendario
+                    </a>
                     <a href="{{ route('appointments.create') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-clinical-600 rounded-lg hover:bg-clinical-700 shadow-sm transition">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
