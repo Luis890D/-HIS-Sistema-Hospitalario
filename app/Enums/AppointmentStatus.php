@@ -40,4 +40,56 @@ enum AppointmentStatus: string
             self::NO_SHOW => 'bg-gray-100 text-gray-800 border-gray-200',
         };
     }
+
+    /**
+     * Define los estados válidos hacia los que se puede transicionar desde el estado actual
+     * @return AppointmentStatus[]
+     */
+    public function allowedTransitions(): array
+    {
+        return match($this) {
+            self::PENDING => [
+                self::CONFIRMED,
+                self::CANCELLED,
+                self::RESCHEDULED,
+            ],
+            self::CONFIRMED => [
+                self::ATTENDED,
+                self::CANCELLED,
+                self::RESCHEDULED,
+                self::NO_SHOW,
+            ],
+            self::RESCHEDULED => [
+                self::CONFIRMED,
+                self::ATTENDED,
+                self::CANCELLED,
+                self::NO_SHOW,
+                self::RESCHEDULED,
+            ],
+            self::ATTENDED => [],   // Estado terminal
+            self::CANCELLED => [],  // Estado terminal
+            self::NO_SHOW => [],    // Estado terminal
+        };
+    }
+
+    /**
+     * Valida si la transición hacia el estado destino está permitida
+     */
+    public function canTransitionTo(self $target): bool
+    {
+        if ($this === $target) {
+            return true; // Mantener el mismo estado se considera válido
+        }
+
+        return in_array($target, $this->allowedTransitions(), true);
+    }
+
+    /**
+     * Indica si el estado es final/terminal en el ciclo clínico
+     */
+    public function isTerminal(): bool
+    {
+        return empty($this->allowedTransitions());
+    }
 }
+
