@@ -32,6 +32,25 @@ El sistema implementa una separación de responsabilidades clara:
 │   │   └── MedicalSpecialty.php          # Especialidades del hospital
 │   └── Services/
 │       └── AppointmentService.php        # Lógica de negocio (disponibilidad y traslapes)
+├── run/                                  # Scripts de levantamiento desatendido en 1 solo clic
+│   ├── run.bat                           # Script Windows Batch (CMD / Doble clic)
+│   ├── run.ps1                           # Script Windows PowerShell
+│   ├── run.sh                            # Script Bash para Linux / macOS / WSL
+│   ├── docker-run.bat                    # Script para levantar entorno con Docker
+│   └── README.md                         # Instrucciones de la carpeta run/
+├── doc/                                  # Documentación técnica formal del sistema
+│   ├── matriz-requisitos-rqf-rqnf.md     # Matriz de trazabilidad y auditoría de RQF y RQNF
+│   ├── qa-pruebas/                       # Manual de QA y suite de 54 pruebas
+│   ├── integracion-develop/              # Reporte de integración de PRs en develop
+│   ├── ui-ux-design/                     # Tokens y manual de diseño clínico
+│   ├── fullcalendar-ui/                  # Integración de agenda interactiva
+│   ├── validacion-conflictos-estados/    # Concurrencia y máquina de estados
+│   ├── api-rest-citas/                   # Catálogo de endpoints REST v1
+│   └── docker-mysql-schema/              # Esquema DDL y contenedores Docker
+├── tests/                                # Suite de pruebas automatizadas
+│   ├── run_tests.php                     # Runner CLI de pruebas autónomo
+│   ├── Unit/                             # Pruebas unitarias de estados y traslapes
+│   └── Feature/                          # Pruebas de integración de rutas API y Web
 ├── database/
 │   ├── migrations/                       # Tablas: specialties, doctors, patients, appointments
 │   └── seeders/                          # Datos iniciales para pruebas
@@ -40,18 +59,85 @@ El sistema implementa una separación de responsabilidades clara:
 │   ├── nginx/conf.d/app.conf             # Servidor web Nginx configurado para Laravel
 │   └── php/Dockerfile                    # PHP 8.3 FPM + extensiones pdo_mysql + Composer
 ├── resources/views/
-│   ├── layouts/app.blade.php             # Plantilla base hospitalaria
-│   └── appointments/                     # Vistas Blade (index, create, reschedule, show)
+│   ├── layouts/app.blade.php             # Plantilla base hospitalaria con reloj y toasts
+│   └── appointments/                     # Vistas Blade (calendar, index/dashboard, create, reschedule)
 ├── routes/
 │   ├── api.php                           # Endpoints RESTful versión 1
 │   └── web.php                           # Rutas Web MVC
 ├── docker-compose.yml                    # Orquestación de contenedores (app, webserver, db)
-└── .env.example                          # Variables de entorno preconfiguradas para Docker
+└── .env.example                          # Variables de entorno preconfiguradas
 ```
 
 ---
 
-## 2. Puesta en Marcha con Docker
+## 2. 🚀 Inicialización y Levantamiento Rápido en 1 Clic (Carpeta `run/`)
+
+Para que cualquier usuario, docente o evaluador pueda poner en marcha el proyecto completo de manera inmediata y sin configuraciones manuales, se incluye la suite de automatización en la carpeta [`run/`](./run/README.md):
+
+### Opciones de Ejecución:
+
+* **En Windows (CMD o Doble Clic directo):**
+  ```cmd
+  run\run.bat
+  ```
+  *(O simplemente haz doble clic sobre el archivo `run/run.bat` en el explorador de archivos)*.
+
+* **En Windows (PowerShell):**
+  ```powershell
+  .\run\run.ps1
+  ```
+
+* **En Linux / macOS / WSL (Bash):**
+  ```bash
+  chmod +x run/run.sh
+  ./run/run.sh
+  ```
+
+* **Con Docker (1 Solo Clic):**
+  ```cmd
+  run\docker-run.bat
+  ```
+
+### ⚡ ¿Qué realiza el script automáticamente?
+1. **Comprobación de Entorno:** Detecta la presencia de PHP 8.2+ y Composer en el sistema.
+2. **Habilitación de ZIP:** Verifica y activa la extensión `zip` en PHP si estaba deshabilitada para acelerar descargas.
+3. **Carpetas del Sistema:** Crea las estructuras de caché (`bootstrap/cache`) y sesiones/vistas (`storage/framework/*`).
+4. **Archivo de Configuración:** Genera el archivo `.env` a partir de `.env.example`.
+5. **Instalación de Dependencias:** Ejecuta `composer install` descargando los 107 paquetes del framework.
+6. **Seguridad Criptográfica:** Genera la clave de cifrado de sesiones con `php artisan key:generate`.
+7. **Base de Datos y Migraciones:** Inicializa la base de datos relacional y corre las 4 migraciones DDL.
+8. **Poblado de Datos Clínicos:** Carga automáticamente médicos especialistas, pacientes con expedientes y citas de prueba en varios estados.
+9. **Control de Calidad (QA):** Ejecuta la batería de **54 pruebas automatizadas** (`php tests/run_tests.php`) validando que el sistema pase al 100%.
+10. **Lanzamiento:** Inicia el servidor web en `http://127.0.0.1:8000` y **abre automáticamente la agenda interactiva en el navegador**.
+
+---
+
+## 3. 🧪 Dónde Encontrar las Pruebas, QA y Evidencias Técnicas
+
+Para facilitar la revisión técnica, la auditoría y la calificación del proyecto, a continuación se detalla la **ubicación exacta** de todas las suites de pruebas, el control de calidad y las evidencias de ejecución:
+
+| Elemento / Entregable | Ubicación en el Repositorio | Descripción y Contenido |
+| :--- | :--- | :--- |
+| 🏃 **Runner CLI de Pruebas** | [`tests/run_tests.php`](./tests/run_tests.php) | Script autónomo ejecutable con `php tests/run_tests.php` que corre las 54 pruebas con salida visual. |
+| 🧩 **Pruebas Unitarias de Estados** | [`tests/Unit/AppointmentStatusUnitTest.php`](./tests/Unit/AppointmentStatusUnitTest.php) | **29 pruebas**: validación de etiquetas en español, badges cromáticos, estados terminales inmutables y matriz de transiciones. |
+| ⏱️ **Pruebas Unitarias de Traslapes** | [`tests/Unit/TimeSlotOverlapAlgorithmUnitTest.php`](./tests/Unit/TimeSlotOverlapAlgorithmUnitTest.php) | **11 pruebas**: verificación matemática de los 8 casos frontera de colisión temporal y cálculo de duraciones rápidas (+15m, +30m, +45m, +60m). |
+| 🌐 **Pruebas de Rutas API REST** | [`tests/Feature/AppointmentApiGeneralTest.php`](./tests/Feature/AppointmentApiGeneralTest.php) | **6 pruebas**: registro de rutas `/api/v1/appointments`, `/calendar/events`, catálogos y controladores. |
+| 💻 **Pruebas de Rutas Web MVC** | [`tests/Feature/AppointmentWebGeneralTest.php`](./tests/Feature/AppointmentWebGeneralTest.php) | **8 pruebas**: registro de rutas web del calendario, reprogramación, cancelación y cálculo de KPIs. |
+| ⚙️ **Configuración PHPUnit** | [`phpunit.xml`](./phpunit.xml) | Archivo formal de configuración de suites unitarias y de integración. |
+| 📘 **Manual Completo de QA** | [`doc/qa-pruebas/README.md`](./doc/qa-pruebas/README.md) | Estrategia de QA, matriz de los 54 casos de prueba (QA-01 a QA-54), escaneo léxico (`php -l` en 30 archivos, 0 errores) y sign-off. |
+| 📸 **Registro de Evidencias (RQNF-08)** | [`doc/evidencias/README.md`](./doc/evidencias/README.md) | Logs reales de comandos de terminal, salidas de migraciones, seeders y respuestas completas de API en vivo (HTTP 200, 201, 404, 409, 422). |
+| 📊 **Matriz de Trazabilidad RQF/RQNF** | [`doc/matriz-requisitos-rqf-rqnf.md`](./doc/matriz-requisitos-rqf-rqnf.md) | Mapeo detallado de los 10 RQF y los 8 RQNF frente al código fuente y pruebas. |
+| 🔀 **Reporte de Integración Git** | [`doc/integracion-develop/README.md`](./doc/integracion-develop/README.md) | Detalle de los 5 Pull Requests mergeados a `develop` sin conflictos. |
+
+### Cómo Ejecutar la Suite de Pruebas:
+```powershell
+php tests/run_tests.php
+```
+> **Resultado Actual:** **54 pruebas PASADAS, 0 FALLIDAS (100% de éxito)**.
+
+---
+
+## 4. Puesta en Marcha Alternativa con Docker Manual
 
 ### Requisitos
 - [Docker Desktop](https://www.docker.com/) instalado y en ejecución.
@@ -89,12 +175,13 @@ El sistema implementa una separación de responsabilidades clara:
    ```
 
 6. **Acceder a la aplicación**:
-   - Panel Web MVC: [http://localhost:8080/appointments](http://localhost:8080/appointments)
+   - Agenda FullCalendar: [http://localhost:8080/appointments/calendar](http://localhost:8080/appointments/calendar)
+   - Dashboard Clínico: [http://localhost:8080/appointments](http://localhost:8080/appointments)
    - API REST: [http://localhost:8080/api/v1/appointments](http://localhost:8080/api/v1/appointments)
 
 ---
 
-## 3. Endpoints de la API REST (`/api/v1`)
+## 5. Endpoints de la API REST (`/api/v1`)
 
 | Método | Endpoint | Acción | Descripción |
 | :--- | :--- | :--- | :--- |
@@ -137,7 +224,7 @@ El sistema implementa una separación de responsabilidades clara:
 
 ---
 
-## 4. Validaciones y Reglas del Sistema
+## 6. Validaciones y Reglas del Sistema
 - **Sin traslapes de horario**: `AppointmentService::isSlotAvailable` previene que un médico sea agendado dos veces en horarios superpuestos.
 - **Trazabilidad clínica**: Cada reprogramación y cancelación registra el motivo, la fecha del cambio y preserva el historial del expediente.
 - **Integridad referencial en MySQL**: Llaves foráneas con restricciones para evitar registros huérfanos entre pacientes, doctores, especialidades y citas.

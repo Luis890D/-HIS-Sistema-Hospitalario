@@ -44,7 +44,28 @@ class AppointmentWebController extends Controller
         $appointments = $query->paginate(10)->withQueryString();
         $doctors = Doctor::where('is_active', true)->get();
 
-        return view('appointments.index', compact('appointments', 'doctors'));
+        $stats = [
+            'total'       => Appointment::count(),
+            'today'       => Appointment::whereDate('appointment_date', today())->count(),
+            'confirmed'   => Appointment::where('status', \App\Enums\AppointmentStatus::CONFIRMED)->count(),
+            'pending'     => Appointment::where('status', \App\Enums\AppointmentStatus::PENDING)->count(),
+            'attended'    => Appointment::where('status', \App\Enums\AppointmentStatus::ATTENDED)->count(),
+            'cancelled'   => Appointment::where('status', \App\Enums\AppointmentStatus::CANCELLED)->count(),
+        ];
+
+        return view('appointments.index', compact('appointments', 'doctors', 'stats'));
+    }
+
+    /**
+     * Vista interactiva de FullCalendar
+     */
+    public function calendar(): View
+    {
+        $doctors = Doctor::with('specialty')->where('is_active', true)->get();
+        $patients = Patient::orderBy('last_name')->get();
+        $specialties = MedicalSpecialty::where('is_active', true)->get();
+
+        return view('appointments.calendar', compact('doctors', 'patients', 'specialties'));
     }
 
     /**
