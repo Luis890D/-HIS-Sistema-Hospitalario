@@ -1,0 +1,150 @@
+<?php
+
+namespace App\Services;
+
+use App\Enums\AppointmentStatus;
+use App\Models\Appointment;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+class AppointmentService
+{
+    /**
+     * Agendar una nueva cita médica
+     * Valida disponibilidad de médico y genera código único
+     */
+    public function scheduleAppointment(array $data): Appointment
+    {
+        $this->ensureDoctorIsAvailable(
+            $data['doctor_id'],
+            $data['appointment_date'],
+            $data['start_time'],
+            $data['end_time']
+        );
+
+        return DB::transaction(function () use ($data) {
+            $data['appointment_code'] = $this->generateAppointmentCode();
+            $data['status'] = AppointmentStatus::PENDING;
+
+            return Appointment::create($data);
+        });
+    }
+
+    /**
+     * Reprogramar una cita médica existente
+     * Actualiza la fecha/hora, registra el motivo y cambia el estado a RESCHEDULED o crea trazabilidad
+     */
+    public function rescheduleAppointment(Appointment $appointment, array $data): Appointment
+    {
+        if (in_array($appointment->status, [AppointmentStatus::CANCELLED, AppointmentStatus::ATTENDED])) {
+            throw ValidationException::withMessages([
+                'status' => ["No se puede reprogramar una cita con estado: {$appointment->status->label()}"],
+            ]);
+        }
+
+        $doctorId = $data['doctor_id'] ?? $appointment->doctor_id;
+        $newDate = $data['appointment_date'];
+        $newStartTime = $data['start_time'];
+        $newEndTime = $data['end_time'];
+
+        $this->ensureDoctorIsAvailable($doctorId, $newDate, $newStartTime, $newEndTime, $appointment->id);
+
+        return DB::transaction(function () use ($appointment, $data, $newDate, $newStartTime, $newEndTime, $doctorId) {
+            $appointment->update([
+                'doctor_id' => $doctorId,
+                'specialty_id' => $data['specialty_id'] ?? $appointment->specialty_id,
+                'appointment_date' => $newDate,
+                'start_time' => $newStartTime,
+                'end_time' => $newEndTime,
+                'status' => AppointmentStatus::RESCHEDULED,
+                'reschedule_reason' => $data['reschedule_reason'] ?? 'Reprogramación solicitada',
+                'rescheduled_at' => now(),
+            ]);
+
+            return $appointment->fresh(['doctor', 'patient', 'specialty']);
+        });
+    }
+
+    /**
+     * Cancelar una cita médica
+     * Registra el motivo y libera el cupo
+     */
+    public function cancelAppointment(Appointment $appointment, string $reason): Appointment
+    {
+        if ($appointment->status === AppointmentStatus::CANCELLED) {
+            throw ValidationException::withMessages([
+                'status' => ['La cita médica ya se encuentra cancelada.'],
+            ]);
+        }
+
+        if ($appointment->status === AppointmentStatus::ATTENDED) {
+            throw ValidationException::withMessages([
+                'status' => ['No es posible cancelar una cita médica que ya ha sido atendida.'],
+            ]);
+        }
+
+        return DB::transaction(function () use ($appointment, $reason) {
+            $appointment->update([
+                'status' => AppointmentStatus::CANCELLED,
+                'cancellation_reason' => $reason,
+                'cancelled_at' => now(),
+            ]);
+
+            return $appointment->fresh();
+        });
+    }
+
+    /**
+     * Comprueba si el médico tiene disponible el intervalo de tiempo especificado
+     */
+    public function isSlotAvailable(
+        int $doctorId,
+        string $date,
+        string $startTime,
+        string $endTime,
+        ?int $excludeAppointmentId = null
+    ): bool {
+        $query = Appointment::where('doctor_id', $doctorId)
+            ->whereDate('appointment_date', $date)
+            ->whereNotIn('status', [AppointmentStatus::CANCELLED])
+            ->where(function ($q) use ($startTime, $endTime) {
+                // Hay traslape si la cita existente empieza antes de que termine la nueva y termina después de que empiece la nueva
+                $q->where('start_time', '<', $endTime)
+                  ->where('end_time', '>', $startTime);
+            });
+
+        if ($excludeAppointmentId) {
+            $query->where('id', '!=', $excludeAppointmentId);
+        }
+
+        return !$query->exists();
+    }
+
+    /**
+     * Lanza excepción si el médico no se encuentra disponible
+     */
+    protected function ensureDoctorIsAvailable(
+        int $doctorId,
+        string $date,
+        string $startTime,
+        string $endTime,
+        ?int $excludeAppointmentId = null
+    ): void {
+        if (!$this->isSlotAvailable($doctorId, $date, $startTime, $endTime, $excludeAppointmentId)) {
+            throw ValidationException::withMessages([
+                'start_time' => ['El médico seleccionado ya tiene una cita agendada en ese intervalo de horario.'],
+            ]);
+        }
+    }
+
+    /**
+     * Genera un código legible único para el paciente
+     */
+    protected function generateAppointmentCode(): string
+    {
+        $prefix = 'CITA-' . date('Ym') . '-';
+        $random = strtoupper(substr(uniqid(), -5));
+        return $prefix . $random;
+    }
+}
