@@ -16,6 +16,7 @@ Route::get('/', function () {
 // Módulo MVC de Citas Médicas
 Route::prefix('appointments')->name('appointments.')->group(function () {
     Route::get('/', [AppointmentWebController::class, 'index'])->name('index');
+    Route::get('/calendar', [AppointmentWebController::class, 'calendar'])->name('calendar');
     Route::get('/create', [AppointmentWebController::class, 'create'])->name('create');
     Route::post('/', [AppointmentWebController::class, 'store'])->name('store');
     Route::get('/{appointment}', [AppointmentWebController::class, 'show'])->name('show');

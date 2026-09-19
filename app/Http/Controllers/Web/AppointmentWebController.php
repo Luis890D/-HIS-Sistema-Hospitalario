@@ -48,6 +48,18 @@ class AppointmentWebController extends Controller
     }
 
     /**
+     * Vista interactiva de FullCalendar
+     */
+    public function calendar(): View
+    {
+        $doctors = Doctor::with('specialty')->where('is_active', true)->get();
+        $patients = Patient::orderBy('last_name')->get();
+        $specialties = MedicalSpecialty::where('is_active', true)->get();
+
+        return view('appointments.calendar', compact('doctors', 'patients', 'specialties'));
+    }
+
+    /**
      * Formulario para agendar una nueva cita
      */
     public function create(): View
