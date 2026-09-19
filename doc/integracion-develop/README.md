@@ -19,6 +19,7 @@ La integración de las cuatro ramas de características (`feature/*`) hacia la r
 | **#2** | `feature/api-rest-citas` | Endpoints REST v1 de citas (CRUD, reprogramar, cancelar) y catálogos de lectura. | **MERGED** | `6f04f26` |
 | **#3** | `feature/validacion-conflictos-estados` | Prevención de doble reserva con bloqueo pesimista y máquina de estados estricta. | **MERGED** | `71d64fa` |
 | **#4** | `feature/fullcalendar-ui` | Interfaz interactiva FullCalendar v6 con agendamiento al clic y Drag & Drop. | **MERGED** | `e2501db` |
+| **#5** | `feature/ui-ux-design` | Rediseño HealthTech UI/UX, KPIs hospitalarios, selectores de duración, toasts y voucher imprimible. | **MERGED** | `630a15e` |
 
 ---
 
@@ -61,22 +62,26 @@ Get-ChildItem -Path . -Filter *.php -Recurse | Where-Object { $_.FullName -notma
 - **Errores sintácticos encontrados:** **0**.
 - **Resultado:** **Aprobado (100% sintaxis válida PHP 8.2 / 8.3)**.
 
-### 3.2. Pruebas Unitarias Automatizadas
-Se ejecutaron los tests en [`tests/Unit/AppointmentConflictAndStatusTest.php`](../../tests/Unit/AppointmentConflictAndStatusTest.php):
-- **Test 1:** Transiciones válidas y prohibidas desde `PENDING` &rarr; **Superado**.
-- **Test 2:** Transiciones válidas y prohibidas desde `CONFIRMED` &rarr; **Superado**.
-- **Test 3:** Inmutabilidad estricta de estados terminales (`CANCELLED`, `ATTENDED`, `NO_SHOW`) &rarr; **Superado**.
-- **Test 4:** Evaluación de los 8 casos frontera del algoritmo de traslapes temporales (mismo horario, traslape superior, traslape inferior, contenedor, citas contiguas continuas y horarios distantes) &rarr; **Superado**.
+### 3.2. Batería de Pruebas Automatizadas (Individuales y Generales)
+Se ejecutó la suite completa de pruebas en PHP con el runner automatizado [`tests/run_tests.php`](../../tests/run_tests.php):
+- **Pruebas Individuales (Unit):**
+  - Estados clínicos, etiquetas, badges cromáticos y máquina de estados (`AppointmentStatusUnitTest.php`): **29 tests PASADOS**.
+  - Algoritmo de traslape horario, cálculo de duraciones rápidas (15, 30, 45, 60 min) y 8 casos de frontera (`TimeSlotOverlapAlgorithmUnitTest.php`): **11 tests PASADOS**.
+- **Pruebas Generales (Feature):**
+  - Definición y registro de rutas API v1, catálogos y controladores (`AppointmentApiGeneralTest.php`): **6 tests PASADOS**.
+  - Rutas Web MVC, redirección raíz y métodos de controlador (`AppointmentWebGeneralTest.php`): **8 tests PASADOS**.
+- **Total ejecutado:** **54 pruebas unitarias y funcionales (54 PASS, 0 FAIL, 100% éxito)**.
 
 ### 3.3. Verificación del Repositorio Git
 - **Árbol de trabajo:** Limpio, sin archivos residuales ni conflictos sin resolver.
-- **Integración con GitHub:** Sincronizado con `origin/develop` al commit `e2501db`.
+- **Integración con GitHub:** Sincronizado con `origin/develop` con todos los Pull Requests integrados (#1 al #5).
 
 ---
 
 ## 4. Dictamen Final
 
-La integración de los cuatro módulos en la rama **`develop`** ha sido **completamente satisfactoria**:
+La integración de los cinco módulos en la rama **`develop`** ha sido **completamente satisfactoria**:
 - No se produjeron pérdidas de funcionalidad ni regresiones.
-- La arquitectura desacoplada (Base de Datos Docker &rarr; Modelos &rarr; Capa de Servicio &rarr; Controladores REST &rarr; Vista Interactiva FullCalendar) opera de forma armónica.
-- El proyecto se encuentra en un estado **estable, probado y listo** para pruebas funcionales, despliegue a entorno de staging o integración hacia `main`.
+- La arquitectura desacoplada (Base de Datos Docker &rarr; Modelos &rarr; Capa de Servicio &rarr; Controladores REST &rarr; Vista Interactiva FullCalendar &rarr; Sistema UI/UX HealthTech) opera de forma armónica.
+- El proyecto cuenta con un 100% de cobertura de verificación frente a la matriz de requisitos RQF-01 a RQF-10 y RQNF-01 a RQNF-08.
+- El proyecto se encuentra en un estado **estable, probado, verificado y listo** para pruebas funcionales, despliegue a entorno de staging o integración final hacia `main`.
