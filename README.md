@@ -32,6 +32,25 @@ El sistema implementa una separación de responsabilidades clara:
 │   │   └── MedicalSpecialty.php          # Especialidades del hospital
 │   └── Services/
 │       └── AppointmentService.php        # Lógica de negocio (disponibilidad y traslapes)
+├── run/                                  # Scripts de levantamiento desatendido en 1 solo clic
+│   ├── run.bat                           # Script Windows Batch (CMD / Doble clic)
+│   ├── run.ps1                           # Script Windows PowerShell
+│   ├── run.sh                            # Script Bash para Linux / macOS / WSL
+│   ├── docker-run.bat                    # Script para levantar entorno con Docker
+│   └── README.md                         # Instrucciones de la carpeta run/
+├── doc/                                  # Documentación técnica formal del sistema
+│   ├── matriz-requisitos-rqf-rqnf.md     # Matriz de trazabilidad y auditoría de RQF y RQNF
+│   ├── qa-pruebas/                       # Manual de QA y suite de 54 pruebas
+│   ├── integracion-develop/              # Reporte de integración de PRs en develop
+│   ├── ui-ux-design/                     # Tokens y manual de diseño clínico
+│   ├── fullcalendar-ui/                  # Integración de agenda interactiva
+│   ├── validacion-conflictos-estados/    # Concurrencia y máquina de estados
+│   ├── api-rest-citas/                   # Catálogo de endpoints REST v1
+│   └── docker-mysql-schema/              # Esquema DDL y contenedores Docker
+├── tests/                                # Suite de pruebas automatizadas
+│   ├── run_tests.php                     # Runner CLI de pruebas autónomo
+│   ├── Unit/                             # Pruebas unitarias de estados y traslapes
+│   └── Feature/                          # Pruebas de integración de rutas API y Web
 ├── database/
 │   ├── migrations/                       # Tablas: specialties, doctors, patients, appointments
 │   └── seeders/                          # Datos iniciales para pruebas
@@ -40,18 +59,60 @@ El sistema implementa una separación de responsabilidades clara:
 │   ├── nginx/conf.d/app.conf             # Servidor web Nginx configurado para Laravel
 │   └── php/Dockerfile                    # PHP 8.3 FPM + extensiones pdo_mysql + Composer
 ├── resources/views/
-│   ├── layouts/app.blade.php             # Plantilla base hospitalaria
-│   └── appointments/                     # Vistas Blade (index, create, reschedule, show)
+│   ├── layouts/app.blade.php             # Plantilla base hospitalaria con reloj y toasts
+│   └── appointments/                     # Vistas Blade (calendar, index/dashboard, create, reschedule)
 ├── routes/
 │   ├── api.php                           # Endpoints RESTful versión 1
 │   └── web.php                           # Rutas Web MVC
 ├── docker-compose.yml                    # Orquestación de contenedores (app, webserver, db)
-└── .env.example                          # Variables de entorno preconfiguradas para Docker
+└── .env.example                          # Variables de entorno preconfiguradas
 ```
 
 ---
 
-## 2. Puesta en Marcha con Docker
+## 2. 🚀 Inicialización y Levantamiento Rápido en 1 Clic (Carpeta `run/`)
+
+Para que cualquier usuario, docente o evaluador pueda poner en marcha el proyecto completo de manera inmediata y sin configuraciones manuales, se incluye la suite de automatización en la carpeta [`run/`](./run/README.md):
+
+### Opciones de Ejecución:
+
+* **En Windows (CMD o Doble Clic directo):**
+  ```cmd
+  run\run.bat
+  ```
+  *(O simplemente haz doble clic sobre el archivo `run/run.bat` en el explorador de archivos)*.
+
+* **En Windows (PowerShell):**
+  ```powershell
+  .\run\run.ps1
+  ```
+
+* **En Linux / macOS / WSL (Bash):**
+  ```bash
+  chmod +x run/run.sh
+  ./run/run.sh
+  ```
+
+* **Con Docker (1 Solo Clic):**
+  ```cmd
+  run\docker-run.bat
+  ```
+
+### ⚡ ¿Qué realiza el script automáticamente?
+1. **Comprobación de Entorno:** Detecta la presencia de PHP 8.2+ y Composer en el sistema.
+2. **Habilitación de ZIP:** Verifica y activa la extensión `zip` en PHP si estaba deshabilitada para acelerar descargas.
+3. **Carpetas del Sistema:** Crea las estructuras de caché (`bootstrap/cache`) y sesiones/vistas (`storage/framework/*`).
+4. **Archivo de Configuración:** Genera el archivo `.env` a partir de `.env.example`.
+5. **Instalación de Dependencias:** Ejecuta `composer install` descargando los 107 paquetes del framework.
+6. **Seguridad Criptográfica:** Genera la clave de cifrado de sesiones con `php artisan key:generate`.
+7. **Base de Datos y Migraciones:** Inicializa la base de datos relacional y corre las 4 migraciones DDL.
+8. **Poblado de Datos Clínicos:** Carga automáticamente médicos especialistas, pacientes con expedientes y citas de prueba en varios estados.
+9. **Control de Calidad (QA):** Ejecuta la batería de **54 pruebas automatizadas** (`php tests/run_tests.php`) validando que el sistema pase al 100%.
+10. **Lanzamiento:** Inicia el servidor web en `http://127.0.0.1:8000` y **abre automáticamente la agenda interactiva en el navegador**.
+
+---
+
+## 3. Puesta en Marcha Alternativa con Docker Manual
 
 ### Requisitos
 - [Docker Desktop](https://www.docker.com/) instalado y en ejecución.
@@ -89,7 +150,8 @@ El sistema implementa una separación de responsabilidades clara:
    ```
 
 6. **Acceder a la aplicación**:
-   - Panel Web MVC: [http://localhost:8080/appointments](http://localhost:8080/appointments)
+   - Agenda FullCalendar: [http://localhost:8080/appointments/calendar](http://localhost:8080/appointments/calendar)
+   - Dashboard Clínico: [http://localhost:8080/appointments](http://localhost:8080/appointments)
    - API REST: [http://localhost:8080/api/v1/appointments](http://localhost:8080/api/v1/appointments)
 
 ---
