@@ -179,7 +179,7 @@ Se crearon índices específicos para garantizar tiempos de respuesta rápidos e
 
 ## 5. Arquitectura del Contenedor MySQL en Docker
 
-El archivo [`docker-compose.yml`](../docker-compose.yml) orquesta el contenedor `his_mysql_db` con las siguientes características:
+El archivo [`docker-compose.yml`](../../docker-compose.yml) orquesta el contenedor `his_mysql_db` con las siguientes características:
 
 - **Imagen:** `mysql:8.0` oficial de Docker Hub.
 - **Variables de Entorno:**
@@ -188,7 +188,7 @@ El archivo [`docker-compose.yml`](../docker-compose.yml) orquesta el contenedor 
   - `MYSQL_PASSWORD`: `his_password`
   - `MYSQL_ROOT_PASSWORD`: `root_secret`
 - **Persistencia:** Volumen Docker nombrado `his_mysql_data:/var/lib/mysql`. Los datos no se pierden al reiniciar los contenedores.
-- **Script de Inicialización:** Montaje de lectura de [`docker/mysql/init.sql`](../docker/mysql/init.sql) en `/docker-entrypoint-initdb.d/init.sql`. En la primera inicialización del contenedor, MySQL ejecuta este archivo automáticamente.
+- **Script de Inicialización:** Montaje de lectura de [`docker/mysql/init.sql`](../../docker/mysql/init.sql) en `/docker-entrypoint-initdb.d/init.sql`. En la primera inicialización del contenedor, MySQL ejecuta este archivo automáticamente.
 - **Healthcheck:**
   ```yaml
   test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-root_secret}"]
