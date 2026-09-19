@@ -112,7 +112,32 @@ Para que cualquier usuario, docente o evaluador pueda poner en marcha el proyect
 
 ---
 
-## 3. Puesta en Marcha Alternativa con Docker Manual
+## 3. 🧪 Dónde Encontrar las Pruebas, QA y Evidencias Técnicas
+
+Para facilitar la revisión técnica, la auditoría y la calificación del proyecto, a continuación se detalla la **ubicación exacta** de todas las suites de pruebas, el control de calidad y las evidencias de ejecución:
+
+| Elemento / Entregable | Ubicación en el Repositorio | Descripción y Contenido |
+| :--- | :--- | :--- |
+| 🏃 **Runner CLI de Pruebas** | [`tests/run_tests.php`](./tests/run_tests.php) | Script autónomo ejecutable con `php tests/run_tests.php` que corre las 54 pruebas con salida visual. |
+| 🧩 **Pruebas Unitarias de Estados** | [`tests/Unit/AppointmentStatusUnitTest.php`](./tests/Unit/AppointmentStatusUnitTest.php) | **29 pruebas**: validación de etiquetas en español, badges cromáticos, estados terminales inmutables y matriz de transiciones. |
+| ⏱️ **Pruebas Unitarias de Traslapes** | [`tests/Unit/TimeSlotOverlapAlgorithmUnitTest.php`](./tests/Unit/TimeSlotOverlapAlgorithmUnitTest.php) | **11 pruebas**: verificación matemática de los 8 casos frontera de colisión temporal y cálculo de duraciones rápidas (+15m, +30m, +45m, +60m). |
+| 🌐 **Pruebas de Rutas API REST** | [`tests/Feature/AppointmentApiGeneralTest.php`](./tests/Feature/AppointmentApiGeneralTest.php) | **6 pruebas**: registro de rutas `/api/v1/appointments`, `/calendar/events`, catálogos y controladores. |
+| 💻 **Pruebas de Rutas Web MVC** | [`tests/Feature/AppointmentWebGeneralTest.php`](./tests/Feature/AppointmentWebGeneralTest.php) | **8 pruebas**: registro de rutas web del calendario, reprogramación, cancelación y cálculo de KPIs. |
+| ⚙️ **Configuración PHPUnit** | [`phpunit.xml`](./phpunit.xml) | Archivo formal de configuración de suites unitarias y de integración. |
+| 📘 **Manual Completo de QA** | [`doc/qa-pruebas/README.md`](./doc/qa-pruebas/README.md) | Estrategia de QA, matriz de los 54 casos de prueba (QA-01 a QA-54), escaneo léxico (`php -l` en 30 archivos, 0 errores) y sign-off. |
+| 📸 **Registro de Evidencias (RQNF-08)** | [`doc/evidencias/README.md`](./doc/evidencias/README.md) | Logs reales de comandos de terminal, salidas de migraciones, seeders y respuestas completas de API en vivo (HTTP 200, 201, 404, 409, 422). |
+| 📊 **Matriz de Trazabilidad RQF/RQNF** | [`doc/matriz-requisitos-rqf-rqnf.md`](./doc/matriz-requisitos-rqf-rqnf.md) | Mapeo detallado de los 10 RQF y los 8 RQNF frente al código fuente y pruebas. |
+| 🔀 **Reporte de Integración Git** | [`doc/integracion-develop/README.md`](./doc/integracion-develop/README.md) | Detalle de los 5 Pull Requests mergeados a `develop` sin conflictos. |
+
+### Cómo Ejecutar la Suite de Pruebas:
+```powershell
+php tests/run_tests.php
+```
+> **Resultado Actual:** **54 pruebas PASADAS, 0 FALLIDAS (100% de éxito)**.
+
+---
+
+## 4. Puesta en Marcha Alternativa con Docker Manual
 
 ### Requisitos
 - [Docker Desktop](https://www.docker.com/) instalado y en ejecución.
@@ -156,7 +181,7 @@ Para que cualquier usuario, docente o evaluador pueda poner en marcha el proyect
 
 ---
 
-## 3. Endpoints de la API REST (`/api/v1`)
+## 5. Endpoints de la API REST (`/api/v1`)
 
 | Método | Endpoint | Acción | Descripción |
 | :--- | :--- | :--- | :--- |
@@ -199,7 +224,7 @@ Para que cualquier usuario, docente o evaluador pueda poner en marcha el proyect
 
 ---
 
-## 4. Validaciones y Reglas del Sistema
+## 6. Validaciones y Reglas del Sistema
 - **Sin traslapes de horario**: `AppointmentService::isSlotAvailable` previene que un médico sea agendado dos veces en horarios superpuestos.
 - **Trazabilidad clínica**: Cada reprogramación y cancelación registra el motivo, la fecha del cambio y preserva el historial del expediente.
 - **Integridad referencial en MySQL**: Llaves foráneas con restricciones para evitar registros huérfanos entre pacientes, doctores, especialidades y citas.
